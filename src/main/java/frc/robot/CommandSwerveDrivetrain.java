@@ -13,6 +13,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
@@ -75,6 +76,11 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
           return false;
       },// Change this if the path needs to be flipped on red vs blue
             this); // Subsystem for requirements
+    }
+
+    public Pose2d getPose2d()
+    {
+        return this.getState().Pose;
     }
 
     public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {

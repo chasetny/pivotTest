@@ -8,11 +8,14 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.SwerveCommands.FieldCentricFacingAngleFix;
 import frc.robot.generated.TunerConstants;
 
 public class RobotContainer {
@@ -21,6 +24,8 @@ public class RobotContainer {
 
   private final SendableChooser<Command> autoChooser;
 
+  PIDController turnPID = new PIDController(0.1,0.01 ,0 );
+  PIDController drivePID = new PIDController(0.1,0.01 ,0 );
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final CommandXboxController joystick = new CommandXboxController(0); // My joystick
@@ -30,14 +35,21 @@ public class RobotContainer {
       .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                // driving in open loop
+
+   private final SwerveRequest.RobotCentric rdrive = new SwerveRequest.RobotCentric()
+      .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1); // Add a 10% deadband
+
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+
   //April Tag T^T
   private Rotation2d m_rotation = new Rotation2d();
+  private final Pose2d speakerPosition = new Pose2d(0,0,new Rotation2d(0));
 
-  SwerveRequest.FieldCentricFacingAngle FieldCentricFacingAngle = new SwerveRequest.FieldCentricFacingAngle();
+  //SwerveRequest.FieldCentricFacingAngle FieldCentricFacingAngle = new SwerveRequest.FieldCentricFacingAngle();
+  FieldCentricFacingAngleFix FieldCentricFacingAngleFix = new FieldCentricFacingAngleFix();
 
 
   /* Path follower */
@@ -68,27 +80,43 @@ public class RobotContainer {
     joystick.pov(180).whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
   
     // Limelight data T^T
-    var lastResult = LimelightHelpers.getLatestResults("limelight").targetingResults;
+    var lastResult = LimelightHelpers.getLatestResults("limelight-rear").targetingResults;
 
-
+    //Math T^T for position
+    //Pose2d sdiff = drivetrain.getState().Pose.relativeTo(speakerPosition);
     //Rotate to face April Tag T^T
     joystick.rightTrigger().whileTrue(
-     
-      drivetrain.applyRequest(() -> FieldCentricFacingAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed)
+      drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed)
       .withVelocityY(-joystick.getLeftX() * MaxSpeed)
-      .withTargetDirection(new Rotation2d(0))) //Force Set
-      //.withTargetDirection(lastResult.getBotPose2d().getRotation())) //April Tag T^T
+      .withRotationalRate(turnPID.calculate(LimelightHelpers.getTX("limelight-rear"),0)))
+      //.withTargetDirection(new Rotation2d(0))) //Force Set
+      //.withTargetDirection(new Rotation2d(drivetrain.getState().Pose.relativeTo(speakerPosition).getRotation().getRadians())))  
+     //.withTargetDirection(new Rotation2d(Math.atan(drivetrain.getState().Pose.getY()/drivetrain.getState().Pose.getX())))) //Force Set
+      //.withTargetDirection(drivetrain.getPose2d().rotateBy(new Rotation2d(Math.toRadians(LimelightHelpers.getTX("limelight-rear")))).getRotation())) //April Tag T^T
       );
-      
-    //Align with April Tag T^T
+
+      joystick.x().whileTrue(
+      drivetrain.applyRequest(() -> drive.withVelocityX(turnPID.calculate(LimelightHelpers.getTY("limelight-rear"),LimelightHelpers.getTY("limelight-rear")!=0?15:0)* MaxSpeed)
+      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+      .withRotationalRate(turnPID.calculate(LimelightHelpers.getTX("limelight-rear"),0)))
+      //.withTargetDirection(new Rotation2d(0))) //Force Set
+      //.withTargetDirection(new Rotation2d(drivetrain.getState().Pose.relativeTo(speakerPosition).getRotation().getRadians())))  
+     //.withTargetDirection(new Rotation2d(Math.atan(drivetrain.getState().Pose.getY()/drivetrain.getState().Pose.getX())))) //Force Set
+      //.withTargetDirection(drivetrain.getPose2d().rotateBy(new Rotation2d(Math.toRadians(LimelightHelpers.getTX("limelight-rear")))).getRotation())) //April Tag T^T
+      );
+
+
+    //Robot centric Drive with Bumper (Used with Camera)
+    joystick.rightBumper().whileTrue(
+      drivetrain.applyRequest(() -> rdrive.withVelocityX(-joystick.getLeftY() * MaxSpeed)
+      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+      .withRotationalRate(-joystick.getRightX() * MaxAngularRate)));
+
+    //Align with to SET angle
     joystick.leftTrigger().whileTrue(  
-     
-      drivetrain.applyRequest(() -> FieldCentricFacingAngle.withVelocityX(lastResult.getBotPose2d().getX())
-      .withVelocityY(lastResult.getBotPose2d().getY())
-      .withTargetDirection(lastResult.getBotPose2d().getRotation())));
-      
-
-
+      drivetrain.applyRequest(() -> FieldCentricFacingAngleFix.withVelocityX(-joystick.getLeftY() * MaxSpeed)
+      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+      .withTargetDirection(new Rotation2d(0))));
   }
 
   public RobotContainer() {
