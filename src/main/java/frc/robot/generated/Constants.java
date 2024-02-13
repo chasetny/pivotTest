@@ -9,5 +9,12 @@ public class Constants {
 
         }
 
+        
+        public static final class ShooterConstants {
+        
+            public static final int shooterTOP = 5;
+            public static final int shooterBOTTOM = 6;
+
+        }
 
 }
