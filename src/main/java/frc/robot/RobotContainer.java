@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.SwerveCommands.FieldCentricFacingAngleFix;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.LEDSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 
 
 public class RobotContainer {
@@ -65,8 +65,8 @@ public class RobotContainer {
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
 
-  //Shooter
-  public final ShooterSubsystem shooter = new ShooterSubsystem();
+  //intake
+  public final IntakeSubsystem intake = new IntakeSubsystem();
 
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
@@ -137,14 +137,13 @@ public class RobotContainer {
       ////////////////////////
       ////////////////////////
 
-      //Shooter
+      //intake
       ////////////////////////
-      shooter.setDefaultCommand(shooter.withDisable());
-      joystick.button(6).onTrue(shooter.slowspeed());
-      joystick.button(7).onTrue(shooter.midspeed());
-      joystick.button(8).onTrue(shooter.highspeed());
-      joystick.button(9).onTrue(shooter.withDisable());
-
+      intake.setDefaultCommand(intake.withDisable());
+      joystick.button(6).onTrue(intake.slowspeed());
+      joystick.button(7).onTrue(intake.midspeed());
+      joystick.button(8).onTrue(intake.highspeed());
+      joystick.button(9).onTrue(intake.withDisable());
 
   }
 
