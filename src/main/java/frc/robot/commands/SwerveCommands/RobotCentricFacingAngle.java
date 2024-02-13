@@ -1,4 +1,4 @@
-package frc.robot.SwerveCommands;
+package frc.robot.commands.SwerveCommands;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
@@ -28,7 +28,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
      * robot should be facing a changing direction throughout the motion.
      */
     
-    public class FieldCentricFacingAngleFix implements SwerveRequest {
+    public class RobotCentricFacingAngle implements SwerveRequest {
         /**
          * The velocity in the X direction, in m/s.
          * X is defined as forward according to WPILib convention,
@@ -113,7 +113,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
          * @param velocityX Velocity in the X direction, in m/s
          * @return this request
          */
-        public FieldCentricFacingAngleFix withVelocityX(double velocityX) {
+        public RobotCentricFacingAngle withVelocityX(double velocityX) {
             this.VelocityX = velocityX;
             return this;
         }
@@ -126,7 +126,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
          * @param velocityY Velocity in the Y direction, in m/s
          * @return this request
          */
-        public FieldCentricFacingAngleFix withVelocityY(double velocityY) {
+        public RobotCentricFacingAngle withVelocityY(double velocityY) {
             this.VelocityY = velocityY;
             return this;
         }
@@ -140,7 +140,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
          * @param targetDirection Desired direction to face
          * @return this request
          */
-        public FieldCentricFacingAngleFix withTargetDirection(Rotation2d targetDirection) {
+        public RobotCentricFacingAngle withTargetDirection(Rotation2d targetDirection) {
             this.TargetDirection = targetDirection;
             return this;
         }
@@ -151,7 +151,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
          * @param deadband Allowable deadband of the request
          * @return this request
          */
-        public FieldCentricFacingAngleFix withDeadband(double deadband) {
+        public RobotCentricFacingAngle withDeadband(double deadband) {
             this.Deadband = deadband;
             return this;
         }
@@ -161,7 +161,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
          * @param rotationalDeadband Rotational deadband of the request
          * @return this request
          */
-        public FieldCentricFacingAngleFix withRotationalDeadband(double rotationalDeadband) {
+        public RobotCentricFacingAngle withRotationalDeadband(double rotationalDeadband) {
             this.RotationalDeadband = rotationalDeadband;
             return this;
         }
@@ -172,7 +172,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
          * @param driveRequestType The type of control request to use for the drive motor
          * @return this request
          */
-        public FieldCentricFacingAngleFix withDriveRequestType(SwerveModule.DriveRequestType driveRequestType) {
+        public RobotCentricFacingAngle withDriveRequestType(SwerveModule.DriveRequestType driveRequestType) {
             this.DriveRequestType = driveRequestType;
             return this;
         }
@@ -182,7 +182,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
          * @param steerRequestType The type of control request to use for the steer motor
          * @return this request
          */
-        public FieldCentricFacingAngleFix withSteerRequestType(SwerveModule.SteerRequestType steerRequestType) {
+        public RobotCentricFacingAngle withSteerRequestType(SwerveModule.SteerRequestType steerRequestType) {
             this.SteerRequestType = steerRequestType;
             return this;
         }

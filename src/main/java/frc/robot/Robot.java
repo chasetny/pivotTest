@@ -27,7 +27,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+    m_robotContainer.led.setREDPulse();
     CommandScheduler.getInstance().run();
+
     if (UseLimelight) {
       var lastResult = LimelightHelpers.getLatestResults("limelight").targetingResults;
 

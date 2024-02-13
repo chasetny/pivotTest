@@ -13,6 +13,7 @@ public class LEDSubsystem implements Subsystem{
 
   private AddressableLED m_led;
   private AddressableLEDBuffer m_ledBuffer;
+  private int bluePulseBrightness = 0;
     public LEDSubsystem(int PWMPort)
     {
         m_led = new AddressableLED(PWMPort);
@@ -61,7 +62,48 @@ public class LEDSubsystem implements Subsystem{
       }
 
 
+      public void redPulse(){
+        for (var i = 0; i < m_ledBuffer.getLength(); i++) {
+          // Sets the specified LED to the RGB values for blue
+          m_ledBuffer.setRGB(i, 0, 0, bluePulseBrightness);
+           }
+        
+           //increase brightness
+           bluePulseBrightness += 5;
+        
+           //Check bounds
+           bluePulseBrightness %= 255;
+        
+           m_led.setData(m_ledBuffer);
+        
+          }
+
+
       public Command setRED() {
-        return run(() -> this.setRGB(255, 0, 0));
+        return runOnce(() -> this.setRGB(255, 0, 0));
+    }
+
+      public Command setREDPulse() {
+        return run(() -> this.setREDPulse());
+    }
+
+      public Command setInit() {
+        return runOnce(() -> this.setRGB(255, 192, 203));
+    }
+
+    public Command setBLUE() {
+        return runOnce(() -> this.setRGB(0, 0, 255));
+    }
+
+     public Command setGreen() {
+        return runOnce(() -> this.setRGB(0, 255, 0));
+    }
+
+     public Command setRainbow() {
+        return runOnce(() -> this.rainbow(0));
+    }
+
+    public Command setRainbowAni(double d) {
+        return runOnce(() -> this.rainbow((int) d));
     }
 }
