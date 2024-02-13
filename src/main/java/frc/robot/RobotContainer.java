@@ -15,10 +15,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.SwerveCommands.FieldCentricFacingAngleFix;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 
 
 public class RobotContainer {
@@ -31,7 +33,8 @@ public class RobotContainer {
   PIDController drivePID = new PIDController(0.1,0.01 ,0 );
 
   /* Setting up bindings for necessary control of the swerve drive platform */
-  private final CommandXboxController joystick = new CommandXboxController(0); // My joystick
+  private final CommandXboxController xbox = new CommandXboxController(0); // My joystick
+  private final CommandJoystick joystick = new CommandJoystick(1); // My joystick
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
 
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -62,28 +65,31 @@ public class RobotContainer {
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
 
+  //Shooter
+  public final ShooterSubsystem shooter = new ShooterSubsystem();
+
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
+        drivetrain.applyRequest(() -> drive.withVelocityX(-xbox.getLeftY() * MaxSpeed) // Drive forward with
                                                                                            // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            .withVelocityY(-xbox.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+            .withRotationalRate(-xbox.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ).ignoringDisable(true));
 
-    joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.a().whileTrue(led.setRainbowAni((joystick.getLeftX() * 255)));
-    joystick.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+    xbox.a().whileTrue(drivetrain.applyRequest(() -> brake));
+    xbox.a().whileTrue(led.setRainbowAni((xbox.getLeftX() * 255)));
+    xbox.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-xbox.getLeftY(), -xbox.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
-    joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+    xbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
 
     // if (Utils.isSimulation()) {
     //   drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     // }
     drivetrain.registerTelemetry(logger::telemeterize);
 
-    joystick.pov(0).whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
-    joystick.pov(180).whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
+    xbox.pov(0).whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
+    xbox.pov(180).whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
   
     // Limelight data T^T
     var lastResult = LimelightHelpers.getLatestResults("limelight-rear").targetingResults;
@@ -91,20 +97,20 @@ public class RobotContainer {
     //Math T^T for position
     //Pose2d sdiff = drivetrain.getState().Pose.relativeTo(speakerPosition);
     //Rotate to face April Tag T^T
-    joystick.rightTrigger().whileTrue(
-      drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed)
-      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+    xbox.rightTrigger().whileTrue(
+      drivetrain.applyRequest(() -> drive.withVelocityX(-xbox.getLeftY() * MaxSpeed)
+      .withVelocityY(-xbox.getLeftX() * MaxSpeed)
       .withRotationalRate(turnPID.calculate(LimelightHelpers.getTX("limelight-rear"),0)))
       //.withTargetDirection(new Rotation2d(0))) //Force Set
       //.withTargetDirection(new Rotation2d(drivetrain.getState().Pose.relativeTo(speakerPosition).getRotation().getRadians())))  
      //.withTargetDirection(new Rotation2d(Math.atan(drivetrain.getState().Pose.getY()/drivetrain.getState().Pose.getX())))) //Force Set
       //.withTargetDirection(drivetrain.getPose2d().rotateBy(new Rotation2d(Math.toRadians(LimelightHelpers.getTX("limelight-rear")))).getRotation())) //April Tag T^T
       );
-    joystick.rightTrigger().whileTrue(led.setBLUE());
+    xbox.rightTrigger().whileTrue(led.setBLUE());
 
-      joystick.x().whileTrue(
+      xbox.x().whileTrue(
       drivetrain.applyRequest(() -> drive.withVelocityX(turnPID.calculate(LimelightHelpers.getTY("limelight-rear"),LimelightHelpers.getTY("limelight-rear")!=0?15:0)* MaxSpeed)
-      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+      .withVelocityY(-xbox.getLeftX() * MaxSpeed)
       .withRotationalRate(turnPID.calculate(LimelightHelpers.getTX("limelight-rear"),0)))
       //.withTargetDirection(new Rotation2d(0))) //Force Set
       //.withTargetDirection(new Rotation2d(drivetrain.getState().Pose.relativeTo(speakerPosition).getRotation().getRadians())))  
@@ -112,19 +118,34 @@ public class RobotContainer {
       //.withTargetDirection(drivetrain.getPose2d().rotateBy(new Rotation2d(Math.toRadians(LimelightHelpers.getTX("limelight-rear")))).getRotation())) //April Tag T^T
       );
 
-    joystick.x().whileTrue(led.setGreen());
+    xbox.x().whileTrue(led.setGreen());
 
     //Robot centric Drive with Bumper (Used with Camera)
-    joystick.rightBumper().whileTrue(
-      drivetrain.applyRequest(() -> rdrive.withVelocityX(-joystick.getLeftY() * MaxSpeed)
-      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
-      .withRotationalRate(-joystick.getRightX() * MaxAngularRate)));
+    xbox.rightBumper().whileTrue(
+      drivetrain.applyRequest(() -> rdrive.withVelocityX(-xbox.getLeftY() * MaxSpeed)
+      .withVelocityY(-xbox.getLeftX() * MaxSpeed)
+      .withRotationalRate(-xbox.getRightX() * MaxAngularRate)));
 
     //Align with to SET angle
-    joystick.leftTrigger().whileTrue(  
-      drivetrain.applyRequest(() -> FieldCentricFacingAngleFix.withVelocityX(-joystick.getLeftY() * MaxSpeed)
-      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+    xbox.leftTrigger().whileTrue(  
+      drivetrain.applyRequest(() -> FieldCentricFacingAngleFix.withVelocityX(-xbox.getLeftY() * MaxSpeed)
+      .withVelocityY(-xbox.getLeftX() * MaxSpeed)
       .withTargetDirection(new Rotation2d(0))));
+
+
+      ///////JOYSTICK CONTROLS
+      ////////////////////////
+      ////////////////////////
+
+      //Shooter
+      ////////////////////////
+      shooter.setDefaultCommand(shooter.withDisable());
+      joystick.button(6).onTrue(shooter.slowspeed());
+      joystick.button(7).onTrue(shooter.midspeed());
+      joystick.button(8).onTrue(shooter.highspeed());
+      joystick.button(9).onTrue(shooter.withDisable());
+
+
   }
 
   public RobotContainer() {
