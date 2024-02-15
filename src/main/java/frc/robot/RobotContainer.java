@@ -27,19 +27,25 @@ import frc.robot.subsystems.IntakeSubsystem;
 
 
 public class RobotContainer {
+
+  //Controllers
+   /* Setting up bindings for necessary control of the swerve drive platform */
+  private final CommandXboxController xbox = new CommandXboxController(0); // Xbox Controller
+  private final CommandJoystick joystick = new CommandJoystick(1); //Joystick
+
+
+  //Swerve Variables/////////////////
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
   private double MaxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
-  private final SendableChooser<Command> autoChooser;
+  //Need to tune**********
+  PIDController turnPID = new PIDController(0.1,0.01 ,0 ); //Default Values 
+  PIDController drivePID = new PIDController(0.1,0.01 ,0 ); //Default Values
 
-  PIDController turnPID = new PIDController(0.1,0.01 ,0 );
-  PIDController drivePID = new PIDController(0.1,0.01 ,0 );
-
-  /* Setting up bindings for necessary control of the swerve drive platform */
-  private final CommandXboxController xbox = new CommandXboxController(0); // My joystick
-  private final CommandJoystick joystick = new CommandJoystick(1); // My joystick
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
 
+
+  //Request Setup - Essentially creating Commands
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
@@ -52,8 +58,6 @@ public class RobotContainer {
   private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
-  public final LEDSubsystem led = new LEDSubsystem(0);
-
   //April Tag T^T
   private Rotation2d m_rotation = new Rotation2d();
   private final Pose2d speakerPosition = new Pose2d(0,0,new Rotation2d(0));
@@ -61,27 +65,47 @@ public class RobotContainer {
   //SwerveRequest.FieldCentricFacingAngle FieldCentricFacingAngle = new SwerveRequest.FieldCentricFacingAngle();
   FieldCentricFacingAngleFix FieldCentricFacingAngleFix = new FieldCentricFacingAngleFix();
 
+  //Auto
+  private final SendableChooser<Command> autoChooser;
 
   /* Path follower */
   private Command runAuto = drivetrain.getAutoPath("Tests");
-
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
 
-  //intake
+  //LED Subsystem
+  public final LEDSubsystem led = new LEDSubsystem(0);
+
+  //intake Subsystem
   public final IntakeSubsystem intake = new IntakeSubsystem();
 
-  //shooter
+  //shooter Subsystem
   public final ShooterSubsystem shooter = new ShooterSubsystem();
 
-  //Feeder
+  //Feeder Subsystem
   public final FeederSubsystem feeder = new FeederSubsystem();
 
-  //pivot
- public final PivotSubsystem pivot = new PivotSubsystem();
+  //pivot Subsystem
+  public final PivotSubsystem pivot = new PivotSubsystem();
 
 
   private void configureBindings() {
+
+    //xbox Controls - swerve
+
+    //xbox Buttons
+
+    //Brake mode (x - config)
+    xbox.a().whileTrue(drivetrain.applyRequest(() -> brake));
+
+    //Point Wheels to a certain angle - Will delete Later
+    xbox.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-xbox.getLeftY(), -xbox.getLeftX()))));
+    
+    // reset the field-centric heading on left bumper press
+    xbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+    
+
+
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive.withVelocityX(-xbox.getLeftY() * MaxSpeed) // Drive forward with
                                                                                            // negative Y (forward)
@@ -89,23 +113,22 @@ public class RobotContainer {
             .withRotationalRate(-xbox.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ).ignoringDisable(true));
 
-    xbox.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    xbox.a().whileTrue(led.setRainbowAni((xbox.getLeftX() * 255)));
-    xbox.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-xbox.getLeftY(), -xbox.getLeftX()))));
-
-    // reset the field-centric heading on left bumper press
-    xbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
 
     // if (Utils.isSimulation()) {
     //   drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     // }
     drivetrain.registerTelemetry(logger::telemeterize);
 
+    //Move Robot Centric small velocity for fine tuning movements
     xbox.pov(0).whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
     xbox.pov(180).whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
   
+
     // Limelight data T^T
     var lastResult = LimelightHelpers.getLatestResults("limelight-rear").targetingResults;
+
+
+    ///Swerve Position tracking and facing ---- Will need to change
 
     //Math T^T for position
     //Pose2d sdiff = drivetrain.getState().Pose.relativeTo(speakerPosition);
@@ -119,7 +142,6 @@ public class RobotContainer {
       //.withTargetDirection(new Rotation2d(Math.atan(drivetrain.getState().Pose.getY()/drivetrain.getState().Pose.getX())))) //Force Set
       //.withTargetDirection(drivetrain.getPose2d().rotateBy(new Rotation2d(Math.toRadians(LimelightHelpers.getTX("limelight-rear")))).getRotation())) //April Tag T^T
       );
-    xbox.rightTrigger().whileTrue(led.setBLUE());
 
       xbox.x().whileTrue(
       drivetrain.applyRequest(() -> drive.withVelocityX(turnPID.calculate(LimelightHelpers.getTY("limelight-rear"),LimelightHelpers.getTY("limelight-rear")!=0?15:0)* MaxSpeed)
@@ -131,7 +153,6 @@ public class RobotContainer {
       //.withTargetDirection(drivetrain.getPose2d().rotateBy(new Rotation2d(Math.toRadians(LimelightHelpers.getTX("limelight-rear")))).getRotation())) //April Tag T^T
       );
 
-    xbox.x().whileTrue(led.setGreen());
 
     //Robot centric Drive with Bumper (Used with Camera)
     xbox.rightBumper().whileTrue(
@@ -144,6 +165,12 @@ public class RobotContainer {
       drivetrain.applyRequest(() -> FieldCentricFacingAngleFix.withVelocityX(-xbox.getLeftY() * MaxSpeed)
       .withVelocityY(-xbox.getLeftX() * MaxSpeed)
       .withTargetDirection(new Rotation2d(0))));
+
+
+    //xbox LED Buttons
+    xbox.rightTrigger().whileTrue(led.setBLUE());
+    xbox.x().whileTrue(led.setGreen());
+    xbox.a().whileTrue(led.setRainbowAni((xbox.getLeftX() * 255)));
 
 
       ///////JOYSTICK CONTROLS
@@ -180,13 +207,35 @@ public class RobotContainer {
 
   configureBindings();
 
+  //PATH PLANNER COMMANDS
+
+  //LED
   NamedCommands.registerCommand("setRED", led.setRED());
   NamedCommands.registerCommand("setPink", led.setInit());
   NamedCommands.registerCommand("setBLUE", led.setBLUE());
   NamedCommands.registerCommand("setGREEN", led.setGreen());
   NamedCommands.registerCommand("setRAINBOW", led.setRainbow());
+
+  //SWERVE
   NamedCommands.registerCommand("setFieldRelative",drivetrain.runOnce(() ->  drivetrain.seedFieldRelative()));
   
+  //INTAKE
+  NamedCommands.registerCommand("startIntake", intake.highspeed());
+  NamedCommands.registerCommand("stopIntake", intake.withDisable());
+
+  //FEEDER
+  NamedCommands.registerCommand("startFeeder", feeder.highspeed());
+  NamedCommands.registerCommand("stopFeeder", feeder.withDisable());
+
+  //Shooter
+  NamedCommands.registerCommand("startShooter", shooter.highSpeed());
+  NamedCommands.registerCommand("stopShooter", shooter.stop());
+
+  //Pivot
+  NamedCommands.registerCommand("lowPivot", pivot.low());
+  NamedCommands.registerCommand("highPivot", pivot.high());
+
+  //Pathplanner
   autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
   SmartDashboard.putData("Auto Mode", autoChooser);
   
