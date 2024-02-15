@@ -17,4 +17,11 @@ public class Constants {
 
         }
 
+            
+        public static final class FeederConstants {
+        
+            public static final int feeder = 7;
+
+        }
+
 }

@@ -20,6 +20,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.SwerveCommands.FieldCentricFacingAngleFix;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.subsystems.PivotSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 
 
@@ -68,6 +71,16 @@ public class RobotContainer {
   //intake
   public final IntakeSubsystem intake = new IntakeSubsystem();
 
+  //shooter
+  public final ShooterSubsystem shooter = new ShooterSubsystem();
+
+  //Feeder
+  public final FeederSubsystem feeder = new FeederSubsystem();
+
+  //pivot
+ public final PivotSubsystem pivot = new PivotSubsystem();
+
+
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive.withVelocityX(-xbox.getLeftY() * MaxSpeed) // Drive forward with
@@ -103,7 +116,7 @@ public class RobotContainer {
       .withRotationalRate(turnPID.calculate(LimelightHelpers.getTX("limelight-rear"),0)))
       //.withTargetDirection(new Rotation2d(0))) //Force Set
       //.withTargetDirection(new Rotation2d(drivetrain.getState().Pose.relativeTo(speakerPosition).getRotation().getRadians())))  
-     //.withTargetDirection(new Rotation2d(Math.atan(drivetrain.getState().Pose.getY()/drivetrain.getState().Pose.getX())))) //Force Set
+      //.withTargetDirection(new Rotation2d(Math.atan(drivetrain.getState().Pose.getY()/drivetrain.getState().Pose.getX())))) //Force Set
       //.withTargetDirection(drivetrain.getPose2d().rotateBy(new Rotation2d(Math.toRadians(LimelightHelpers.getTX("limelight-rear")))).getRotation())) //April Tag T^T
       );
     xbox.rightTrigger().whileTrue(led.setBLUE());
@@ -114,7 +127,7 @@ public class RobotContainer {
       .withRotationalRate(turnPID.calculate(LimelightHelpers.getTX("limelight-rear"),0)))
       //.withTargetDirection(new Rotation2d(0))) //Force Set
       //.withTargetDirection(new Rotation2d(drivetrain.getState().Pose.relativeTo(speakerPosition).getRotation().getRadians())))  
-     //.withTargetDirection(new Rotation2d(Math.atan(drivetrain.getState().Pose.getY()/drivetrain.getState().Pose.getX())))) //Force Set
+      //.withTargetDirection(new Rotation2d(Math.atan(drivetrain.getState().Pose.getY()/drivetrain.getState().Pose.getX())))) //Force Set
       //.withTargetDirection(drivetrain.getPose2d().rotateBy(new Rotation2d(Math.toRadians(LimelightHelpers.getTX("limelight-rear")))).getRotation())) //April Tag T^T
       );
 
@@ -145,6 +158,22 @@ public class RobotContainer {
       joystick.button(8).onTrue(intake.highspeed());
       joystick.button(9).onTrue(intake.withDisable());
 
+      //Shooter
+      shooter.setDefaultCommand(shooter.stop());
+      joystick.button(2).onTrue(shooter.ampSpeed());
+      joystick.button(3).onTrue(shooter.lowSpeed());
+      joystick.button(4).onTrue(shooter.highSpeed());
+      joystick.button(5).onTrue(shooter.stop());
+
+      //feeder
+      feeder.setDefaultCommand(feeder.withDisable());
+      joystick.button(2).onTrue(feeder.slowspeed());
+      joystick.button(5).onTrue(feeder.withDisable());
+
+      //pivot
+      pivot.setDefaultCommand(pivot.stop());
+      joystick.button(2).onTrue(pivot.low());
+      joystick.button(5).onTrue(pivot.mid());
   }
 
   public RobotContainer() {
