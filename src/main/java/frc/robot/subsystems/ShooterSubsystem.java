@@ -1,10 +1,9 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkFlex;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -12,101 +11,79 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.generated.Constants.ShooterConstants;;
 
 public class ShooterSubsystem extends SubsystemBase{
+    
+private final TalonFX m_topsh = new TalonFX(ShooterConstants.shooterTOP);
+private final TalonFX m_botsh = new TalonFX(ShooterConstants.shooterBOTTOM);
 
-private CANSparkFlex m_topshooter,m_bottomshooter;
-private SparkPIDController t_pidController,b_pidController;
-private RelativeEncoder b_encoder,t_encoder;
-public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
+private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, true, 0, 0, false, false, false);
+
+private final NeutralOut m_brake = new NeutralOut();
+
+TalonFXConfiguration shooterConfigs = new TalonFXConfiguration();
 
 
 public ShooterSubsystem()
 {
-  m_topshooter = new CANSparkFlex(ShooterConstants.shooterTOP, MotorType.kBrushless);
-  m_bottomshooter = new CANSparkFlex(ShooterConstants.shooterBOTTOM, MotorType.kBrushless);
-  m_topshooter.restoreFactoryDefaults();
-  m_bottomshooter.restoreFactoryDefaults();
+       /* Voltage-based velocity requires a feed forward to account for the back-emf of the motor */
+       shooterConfigs.Slot0.kP = 0.11; // An error of 1 rotation per second results in 2V output
+       shooterConfigs.Slot0.kI = 0.5; // An error of 1 rotation per second increases output by 0.5V every second
+       shooterConfigs.Slot0.kD = 0.0001; // A change of 1 rotation per second squared results in 0.01 volts output
+       shooterConfigs.Slot0.kV = 0.12; // Falcon 500 is a 500kV motor, 500rpm per V = 8.333 rps per V, 1/8.33 = 0.12 volts / Rotation per second
+       // Peak output of 8 volts
+       shooterConfigs.Voltage.PeakForwardVoltage = 8;
+       shooterConfigs.Voltage.PeakReverseVoltage = -8;
 
-  /**
-     * In order to use PID functionality for a controller, a SparkPIDController object
-     * is constructed by calling the getPIDController() method on an existing
-     * CANSparkMax object
-     */
-  t_pidController = m_topshooter.getPIDController();
-  b_pidController = m_bottomshooter.getPIDController();
-
-   // Encoder object created to display position values
-   t_encoder = m_topshooter.getEncoder();
-   b_encoder = m_bottomshooter.getEncoder();
-
-   // PID coefficients
-   kP = 6e-5; 
-   kI = 0;
-   kD = 0; 
-   kIz = 0; 
-   kFF = 0.000015; 
-   kMaxOutput = 1; 
-   kMinOutput = -1;
-   maxRPM = 5700;
-
-   // set PID coefficients
-   t_pidController.setP(kP);
-   t_pidController.setI(kI);
-   t_pidController.setD(kD);
-   t_pidController.setIZone(kIz);
-   t_pidController.setFF(kFF);
-   t_pidController.setOutputRange(kMinOutput, kMaxOutput);
-
-   // set PID coefficients
-   b_pidController.setP(kP);
-   b_pidController.setI(kI);
-   b_pidController.setD(kD);
-   b_pidController.setIZone(kIz);
-   b_pidController.setFF(kFF);
-   b_pidController.setOutputRange(kMinOutput, kMaxOutput);
-
+       m_topsh.getConfigurator().apply(shooterConfigs);
+       m_botsh.getConfigurator().apply(shooterConfigs);
 }
 
-private void setVelocity(double setPoint)
+private void disable()
 {
-  t_pidController.setReference(setPoint, CANSparkMax.ControlType.kVelocity);
-  b_pidController.setReference(setPoint, CANSparkMax.ControlType.kVelocity);
+    m_topsh.setControl(m_brake);
+    m_botsh.setControl(m_brake);
 }
 
-private void setVelocitydiff(double tsetPoint,double bsetPoint)
+private void setVelocity(double desiredRotationsPerSecond)
 {
-  t_pidController.setReference(tsetPoint, CANSparkMax.ControlType.kVelocity);
-  b_pidController.setReference(bsetPoint, CANSparkMax.ControlType.kVelocity);
+    m_topsh.setControl(m_voltageVelocity.withVelocity(desiredRotationsPerSecond));
+    m_botsh.setControl(m_voltageVelocity.withVelocity(desiredRotationsPerSecond));
 }
 
-public Command withVelocity(double setPoint)
+private void setVelocityDiff(double TOPdesiredRotationsPerSecond,double BOTdesiredRotationsPerSecond)
 {
-  return runOnce(() -> this.setVelocity(setPoint));
+    m_topsh.setControl(m_voltageVelocity.withVelocity(TOPdesiredRotationsPerSecond));
+    m_botsh.setControl(m_voltageVelocity.withVelocity(BOTdesiredRotationsPerSecond));
 }
 
-public Command highSpeed()
+
+public Command highspeed()
 {
-  return runOnce(() -> this.setVelocity(80));
+  return runOnce(() -> this.setVelocity(250));
 }
 
-public Command medSpeed()
+public Command midspeed()
+{
+  return runOnce(() -> this.setVelocity(100));
+}
+
+public Command slowspeed()
 {
   return runOnce(() -> this.setVelocity(50));
 }
 
-public Command lowSpeed()
-{
-  return runOnce(() -> this.setVelocity(20));
-}
-
 public Command ampSpeed()
 {
-  return runOnce(() -> this.setVelocitydiff(50,20));
+  return runOnce(() -> this.setVelocityDiff(100,50));
 }
 
-public Command stop()
+public Command withVelocity(double desiredRotationsPerSecond)
 {
-  return runOnce(() -> this.setVelocity(0));
+  return runOnce(() -> this.setVelocity(desiredRotationsPerSecond));
 }
 
+public Command withDisable()
+{
+    return runOnce(() -> this.disable());
+}
 
 }

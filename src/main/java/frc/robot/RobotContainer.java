@@ -186,11 +186,11 @@ public class RobotContainer {
       joystick.button(9).onTrue(intake.withDisable());
 
       //Shooter
-      shooter.setDefaultCommand(shooter.stop());
+      shooter.setDefaultCommand(shooter.withDisable());
       joystick.button(2).onTrue(shooter.ampSpeed());
-      joystick.button(3).onTrue(shooter.lowSpeed());
-      joystick.button(4).onTrue(shooter.highSpeed());
-      joystick.button(5).onTrue(shooter.stop());
+      joystick.button(3).onTrue(shooter.slowspeed());
+      joystick.button(4).onTrue(shooter.highspeed());
+      joystick.button(5).onTrue(shooter.withDisable());
 
       //feeder
       feeder.setDefaultCommand(feeder.withDisable());
@@ -228,8 +228,8 @@ public class RobotContainer {
   NamedCommands.registerCommand("stopFeeder", feeder.withDisable());
 
   //Shooter
-  NamedCommands.registerCommand("startShooter", shooter.highSpeed());
-  NamedCommands.registerCommand("stopShooter", shooter.stop());
+  NamedCommands.registerCommand("startShooter", shooter.highspeed());
+  NamedCommands.registerCommand("stopShooter", shooter.withDisable());
 
   //Pivot
   NamedCommands.registerCommand("lowPivot", pivot.low());
