@@ -24,4 +24,13 @@ public class Constants {
 
         }
 
+
+        public static final class ElevatorConstants {
+        
+            public static final int leftElevator = 8;
+            public static final int rightElevator = 9;
+
+        }
+        
+
 }

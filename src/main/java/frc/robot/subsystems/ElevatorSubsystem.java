@@ -8,21 +8,21 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import frc.robot.generated.Constants.ElevatorConstants;
 import frc.robot.generated.Constants.ShooterConstants;;
 
 public class ElevatorSubsystem extends SubsystemBase{
 
 private CANSparkFlex m_leftElevator, m_rightElevator;
-private SparkPIDController t_pidController,b_pidController;
+private SparkPIDController l_pidController,r_pidController;
 private RelativeEncoder l_encoder,r_encoder;
 public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
 
 
 public ElevatorSubsystem()
 {
-  m_rightElevator = new CANSparkFlex(ShooterConstants.shooterTOP, MotorType.kBrushless);
-  m_leftElevator = new CANSparkFlex(ShooterConstants.shooterBOTTOM, MotorType.kBrushless);
+  m_rightElevator = new CANSparkFlex(ElevatorConstants.rightElevator, MotorType.kBrushless);
+  m_leftElevator = new CANSparkFlex(ElevatorConstants.leftElevator, MotorType.kBrushless);
   m_rightElevator.restoreFactoryDefaults();
   m_leftElevator.restoreFactoryDefaults();
 
@@ -31,8 +31,8 @@ public ElevatorSubsystem()
      * is constructed by calling the getPIDController() method on an existing
      * CANSparkMax object
      */
-  t_pidController = m_rightElevator.getPIDController();
-  b_pidController = m_leftElevator.getPIDController();
+  r_pidController = m_rightElevator.getPIDController();
+  l_pidController = m_leftElevator.getPIDController();
 
    // Encoder object created to display position values
    l_encoder = m_leftElevator.getEncoder();
@@ -49,33 +49,39 @@ public ElevatorSubsystem()
    maxRPM = 5700;
 
    // set PID coefficients
-   t_pidController.setP(kP);
-   t_pidController.setI(kI);
-   t_pidController.setD(kD);
-   t_pidController.setIZone(kIz);
-   t_pidController.setFF(kFF);
-   t_pidController.setOutputRange(kMinOutput, kMaxOutput);
+   r_pidController.setP(kP);
+   r_pidController.setI(kI);
+   r_pidController.setD(kD);
+   r_pidController.setIZone(kIz);
+   r_pidController.setFF(kFF);
+   r_pidController.setOutputRange(kMinOutput, kMaxOutput);
 
    // set PID coefficients
-   b_pidController.setP(kP);
-   b_pidController.setI(kI);
-   b_pidController.setD(kD);
-   b_pidController.setIZone(kIz);
-   b_pidController.setFF(kFF);
-   b_pidController.setOutputRange(kMinOutput, kMaxOutput);
+   l_pidController.setP(kP);
+   l_pidController.setI(kI);
+   l_pidController.setD(kD);
+   l_pidController.setIZone(kIz);
+   l_pidController.setFF(kFF);
+   l_pidController.setOutputRange(kMinOutput, kMaxOutput);
 
 }
 
 private void setVelocity(double setPoint)
 {
-  t_pidController.setReference(setPoint, CANSparkMax.ControlType.kVelocity);
-  b_pidController.setReference(setPoint, CANSparkMax.ControlType.kVelocity);
+  r_pidController.setReference(setPoint, CANSparkMax.ControlType.kVelocity);
+  l_pidController.setReference(setPoint, CANSparkMax.ControlType.kVelocity);
+}
+
+private void setPosition(double setPoint)
+{
+  r_pidController.setReference(setPoint, CANSparkMax.ControlType.kPosition);
+  l_pidController.setReference(setPoint, CANSparkMax.ControlType.kPosition);
 }
 
 private void setVelocitydiff(double tsetPoint,double bsetPoint)
 {
-  t_pidController.setReference(tsetPoint, CANSparkMax.ControlType.kVelocity);
-  b_pidController.setReference(bsetPoint, CANSparkMax.ControlType.kVelocity);
+  r_pidController.setReference(tsetPoint, CANSparkMax.ControlType.kVelocity);
+  l_pidController.setReference(bsetPoint, CANSparkMax.ControlType.kVelocity);
 }
 
 public Command withVelocity(double setPoint)
@@ -88,25 +94,40 @@ public Command highSpeed()
   return runOnce(() -> this.setVelocity(80));
 }
 
-public Command medSpeed()
-{
-  return runOnce(() -> this.setVelocity(50));
-}
 
 public Command lowSpeed()
 {
   return runOnce(() -> this.setVelocity(20));
 }
 
-public Command ampSpeed()
-{
-  return runOnce(() -> this.setVelocitydiff(50,20));
-}
 
 public Command stop()
 {
   return runOnce(() -> this.setVelocity(0));
 }
 
+
+public Command withPosition(double setPoint)
+{
+  return runOnce(() -> this.setPosition(setPoint));
+}
+
+
+public Command setHomePosition()
+{
+  return runOnce(() -> this.setPosition(0)); //need to find
+}
+
+
+public Command setUpPosition()
+{
+  return runOnce(() -> this.setPosition(50)); // need to find
+}
+
+
+public Command setClimbPosition()
+{
+  return runOnce(() -> this.setPosition(20)); // need to find
+}
 
 }
