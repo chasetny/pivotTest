@@ -6,6 +6,7 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -55,6 +56,11 @@ private void setVelocity(double setPoint)
 {
   m_pidController.setReference(setPoint, CANSparkMax.ControlType.kVelocity);
 }
+ 
+@Override
+public void periodic(){
+  SmartDashboard.putNumber("Pivot Encoder", m_encoder.getPosition());
+}
 
 private void setPosition(double setPoint)
 {
@@ -88,6 +94,19 @@ public Command low()
 {
   return runOnce(() -> this.setPosition(20));
 }
+
+
+public Command lowSpeedUp()
+{
+  return runOnce(() -> this.setVelocity(20));
+}
+
+
+public Command lowSpeedDown()
+{
+  return runOnce(() -> this.setVelocity(-20));
+}
+
 
 public Command stop()
 {
