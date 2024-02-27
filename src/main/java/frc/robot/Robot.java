@@ -22,12 +22,10 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     m_robotContainer = new RobotContainer();
 
-    m_robotContainer.drivetrain.getDaqThread().setThreadPriority(99);
   }
 
   @Override
   public void robotPeriodic() {
-    m_robotContainer.led.setREDPulse();
     CommandScheduler.getInstance().run();
 
     if (UseLimelight) {
@@ -42,7 +40,6 @@ public class Robot extends TimedRobot {
       }
 
       if (lastResult.valid) {
-        m_robotContainer.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
       }
     }
   }
