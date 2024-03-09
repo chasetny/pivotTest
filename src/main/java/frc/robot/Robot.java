@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
 
     if (UseLimelight) {
-      var lastResult = LimelightHelpers.getLatestResults("limelight").targetingResults;
+      var lastResult = LimelightHelpers.getLatestResults("limelight-lunas").targetingResults;
 
       var alliance = DriverStation.getAlliance();
       Pose2d llPose = lastResult.getBotPose2d_wpiBlue();

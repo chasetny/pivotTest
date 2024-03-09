@@ -19,11 +19,15 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.SwerveCommands.FieldCentricFacingAngleFix;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.generated.Constants.LimeLightConstants;
+import frc.robot.LimelightHelpers;
+import edu.wpi.first.apriltag.AprilTagDetection;
+import edu.wpi.first.apriltag.AprilTagDetector;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTag;
 import frc.robot.subsystems.PivotSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.FeederSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
+
 
 
 public class RobotContainer {
@@ -42,9 +46,17 @@ public class RobotContainer {
       pivot.setDefaultCommand(pivot.stop());
       // xbox.a().whileTrue(pivot.low());
       // xbox.b().whileTrue(pivot.mid());
-      xbox.pov(0).whileTrue(pivot.lowSpeedUp());
+      xbox.pov(0).whileTrue(pivot.low());
       xbox.pov(180).whileTrue(pivot.lowSpeedDown());
+
+      xbox.a().whileTrue(pivot.AutoAim(
+        LimeLightConstants.goalHeightInches, 
+        LimeLightConstants.heightOfShooter,
+        LimeLightConstants.limelightLensHeightInches,
+        pivot.getDistance(), 
+        LimeLightConstants.distanceFromShooter));
       
+     
   }
 
   public RobotContainer() {

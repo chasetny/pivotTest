@@ -17,6 +17,13 @@ public class Constants {
 
         }
 
+         public static final class PivotConstants {
+        
+            public static final int pivot = 7;
+
+        }
+
+
             
         public static final class FeederConstants {
         
@@ -30,6 +37,16 @@ public class Constants {
             public static final int leftElevator = 8;
             public static final int rightElevator = 9;
 
+        }
+
+        
+        public static final class LimeLightConstants {
+
+            public static final double limelightMountAngledegrees = 0.0;
+            public static final double limelightLensHeightInches = 31.625;
+            public static final double goalHeightInches = 49.25;
+            public static final double heightOfShooter = 0;           
+            public static final double distanceFromShooter = 0;
         }
         
 
