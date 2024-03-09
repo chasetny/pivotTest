@@ -20,13 +20,13 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.SwerveCommands.FieldCentricFacingAngleFix;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.Constants.LimeLightConstants;
-import frc.robot.LimelightHelpers;
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTag;
 import frc.robot.subsystems.PivotSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 
 
 
@@ -36,7 +36,8 @@ public class RobotContainer {
    /* Setting up bindings for necessary control of the swerve drive platform */
   private final CommandXboxController xbox = new CommandXboxController(0); // Xbox Controller
 
-  //pivot Subsystem
+  //Subsystems
+  public final VisionSubsystem vision = new VisionSubsystem();
   public final PivotSubsystem pivot = new PivotSubsystem();
 
 
@@ -49,14 +50,6 @@ public class RobotContainer {
       xbox.pov(0).whileTrue(pivot.low());
       xbox.pov(180).whileTrue(pivot.lowSpeedDown());
 
-      xbox.a().whileTrue(pivot.AutoAim(
-        LimeLightConstants.goalHeightInches, 
-        LimeLightConstants.heightOfShooter,
-        LimeLightConstants.limelightLensHeightInches,
-        pivot.getDistance(), 
-        LimeLightConstants.distanceFromShooter));
-      
-     
   }
 
   public RobotContainer() {

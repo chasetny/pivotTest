@@ -16,8 +16,6 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
-  private final boolean UseLimelight = false;
-
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
@@ -27,21 +25,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-
-    if (UseLimelight) {
-      var lastResult = LimelightHelpers.getLatestResults("limelight-lunas").targetingResults;
-
-      var alliance = DriverStation.getAlliance();
-      Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
-      if (alliance.isPresent()) {
-        if (alliance.get() == DriverStation.Alliance.Red) {
-          llPose = lastResult.getBotPose2d_wpiRed();
-        }
-      }
-
-      if (lastResult.valid) {
-      }
-    }
   }
 
   @Override

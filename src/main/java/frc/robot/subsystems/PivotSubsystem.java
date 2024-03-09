@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.generated.Constants.PivotConstants;
-import frc.robot.LimelightHelpers;
 import frc.robot.generated.Constants.LimeLightConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTable;
@@ -20,23 +19,7 @@ public class PivotSubsystem extends SubsystemBase{
 
 private CANSparkMax m_pviot;
 private SparkPIDController m_pidController;
-private RelativeEncoder m_encoder;
 public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
-
-
-NetworkTable table2 = NetworkTableInstance.getDefault().getTable("limelight-lunas");
-NetworkTable table1 = NetworkTableInstance.getDefault().getTable("limelight-rear");
-NetworkTableInstance nTableInstance = NetworkTableInstance.getDefault();
-LimelightHelpers limelightHelpers = new LimelightHelpers();
-
-NetworkTableEntry tx2 = table1.getEntry("tx");
-NetworkTableEntry ty2 = table1.getEntry("ty");
-NetworkTableEntry ta2 = table1.getEntry("ta");
-
-double x2 = tx2.getDouble(0);
-double y2 = ty2.getDouble(0);
-double area2 = ta2.getDouble(0);
-
 
 public PivotSubsystem()
 {
@@ -48,9 +31,6 @@ public PivotSubsystem()
      * CANSparkMax object
      */
   m_pidController = m_pviot.getPIDController();
-
-   // Encoder object created to display position values
-   m_encoder = m_pviot.getEncoder();
 
    // PID coefficients
    kP = 0.1; 
@@ -80,21 +60,6 @@ private void setVelocity(double setPoint)
  
 @Override
 public void periodic(){
-
-  double targetOffsetAngle_Vertical = y2;
-  double angleToGoalDegrees = LimeLightConstants.limelightMountAngledegrees + targetOffsetAngle_Vertical;
-  double angletoGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
-  double distanceFromLimelightGoalInches = (
-  LimeLightConstants.goalHeightInches - LimeLightConstants.limelightLensHeightInches) / 
-  Math.tan(angletoGoalRadians);
-
-  SmartDashboard.putNumber("Pivot Encoder", m_encoder.getPosition());
-  SmartDashboard.putNumber("LimelightX", x2);
-  SmartDashboard.putNumber("LimelightY", y2);
-  SmartDashboard.putNumber("LimelightArea", area2);
-  SmartDashboard.putNumber("limelightDistance", distanceFromLimelightGoalInches);
-  SmartDashboard.putNumber("AngleToGoalRadians", angletoGoalRadians);
-   
 }
 
 private void setPosition(double setPoint)
@@ -147,31 +112,5 @@ public Command stop()
 {
   return runOnce(() -> this.setVelocity(0));
 }
-
-public double getDistance()
-{
-  double targetOffsetAngle_Vertical = y2;
-  double angleToGoalDegrees = LimeLightConstants.limelightMountAngledegrees + targetOffsetAngle_Vertical;
-  double angletoGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
-  double distanceFromLimelightGoalInches = (
-    LimeLightConstants.goalHeightInches - LimeLightConstants.limelightLensHeightInches) / 
-    Math.tan(angletoGoalRadians);
-  return distanceFromLimelightGoalInches;
-}
-
-public Command AutoAim(
-
-  double goalHeightInches, 
-  double heightOfShooter,  
-  double distanceFromLimelightGoalInches,
-  double limelightLensHeightInches, 
-  double distanceFromShooter) {
-
-  return run(() -> m_pviot.getEncoder().setPosition((180/3.14159)*(Math.atan(
-    (goalHeightInches - limelightLensHeightInches + heightOfShooter) / 
-    (distanceFromLimelightGoalInches + distanceFromShooter))
-    )));
-}
-
 
 }
