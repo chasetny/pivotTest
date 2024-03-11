@@ -44,7 +44,10 @@ public double getDistance()
   double distanceFromLimelightGoalInches = (
     LimeLightConstants.goalHeightInches - LimeLightConstants.limelightLensHeightInches) / 
     Math.tan(angletoGoalRadians);
-  return distanceFromLimelightGoalInches;
+
+    return (LimeLightConstants.limelightLensHeightInches - LimeLightConstants.goalHeightInches) / 
+    Math.abs(Math.toRadians(LimeLightConstants.limelightMountAngledegrees) + Math.toRadians(targetOffsetAngle_Vertical));
+
 }
 
 }

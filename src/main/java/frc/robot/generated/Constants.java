@@ -41,8 +41,8 @@ public class Constants {
 
         
         public static final class LimeLightConstants {
-
-            public static final double limelightMountAngledegrees = 28;
+                //28
+            public static final double limelightMountAngledegrees = Math.toRadians(28);
             public static final double limelightLensHeightInches = 31.0625;
             public static final double goalHeightInches = 49.3125;
             public static final double heightOfShooter = 0;           
