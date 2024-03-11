@@ -113,4 +113,8 @@ public Command stop()
   return runOnce(() -> this.setVelocity(0));
 }
 
+public Command lightlightAutoAim (double distance) {
+  return run(() -> this.setPosition(((distance - 36.125)*0.1194) +24.96));
+}
+
 }
